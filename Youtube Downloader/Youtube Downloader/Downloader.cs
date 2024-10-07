@@ -1,153 +1,159 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using VideoLibrary;
 using System.Windows.Forms;
+using System.IO;
+using System.Threading;
+using System.Net.Http;
 using MediaToolkit;
 
 namespace Youtube_Downloader
 {
     class Downloader
     {
+
         private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private YouTube youtube = new YouTube();
         private IEnumerable<YouTubeVideo> AllVideos;
-        private Thread thread = null;
 
-        private const int DOWNLOAD_PACKET_SIZE = 64 * 1024;
 
         public delegate void ProgressEventHandler(int percent);
         public event ProgressEventHandler VideoProgressEvent;
         public event ProgressEventHandler AudioProgressEvent;
+        public delegate void StatusChangeEventHandler(string message);
+        public event StatusChangeEventHandler StatusChangeEvent;
+        public delegate void DownloadCompleteEventHandler();
+        public event DownloadCompleteEventHandler DownloadComplete;
 
 
+        private const int DOWNLOAD_PACKET_SIZE = 64 * 1024;
 
 
-        public bool FoundVideo { get; set; } = false;
-        public bool FoundAudio { get; set; } = false;
+        // 다운로드 대상 영상
+        private YouTubeVideo VideoItem = null;
+        private YouTubeVideo AudioItem = null;
 
-        public bool VideoDownloadComplete { get; set; } = false;
-        public bool AudioDownloadComplete { get; set; } = false;
 
-        public Downloader(string url)
+        private bool VideoDownloadComplete;
+        private bool AudioDownloadComplete;
+
+
+        public string FFMpegOption { get; set; } = "";
+
+        // 다운로드할 영상/음성 파일명
+        private string VideoFileName = "";
+        private string AudioFileName = "";
+
+        // 최종 저장될 파일명
+        //private string ConvertFileName = "convert.avi";
+        private string SaveFileName = "";
+
+        /// <summary>
+        /// 대상 url의 모든 영상을 가져온 다음 다운로드 할 Video영상과 Audio영상을 선택한다.
+        /// </summary>
+        /// <param name="url"></param>
+        public Downloader(string url, string savePath)
         {
             try
             {
                 this.AllVideos = youtube.GetAllVideos(url);
 
-                int index = 0;
-                foreach (YouTubeVideo video in this.AllVideos)
-                {
-                    logger.Debug("index : " + index++);
-                    logger.Debug("    AdaptiveKind = " + video.AdaptiveKind);
-                    logger.Debug("    AudioBitrate = " + video.AudioBitrate);
-                    logger.Debug("    AudioFormat = " + video.AudioFormat);
-                    logger.Debug("    ContentLength = " + video.ContentLength);
-                    logger.Debug("    FileExtension = " + video.FileExtension);
-                    logger.Debug("    Format = " + video.Format);
-                    logger.Debug("    FormatCode = " + video.FormatCode);
-                    logger.Debug("    Fps = " + video.Fps);
-                    logger.Debug("    FullName = " + video.FullName);
-                    logger.Debug("    IsAdaptive = " + video.IsAdaptive);
-                    logger.Debug("    IsEncrypted = " + video.IsEncrypted);
-                    logger.Debug("    Resolution = " + video.Resolution);
-                    logger.Debug("    Title = " + video.Title);
-                    logger.Debug("    Uri = " + video.Uri);
-                    logger.Debug("    WebSite = " + video.WebSite);
-                }
 
+                this.VideoItem = GetBestVideo();
+                this.AudioItem = GetBestAudio();
+
+#if DEBUG
+                logger.Debug("[영상 파일 정보]");
+                GetVideoInformation(this.VideoItem);
+                logger.Debug("[음성 파일 정보]");
+                GetVideoInformation(this.AudioItem);
+#endif
+
+                // 대상폴더가 없으면 생성
+                DirectoryInfo df = new DirectoryInfo(savePath);
+                if (!df.Exists)
+                    df.Create();
+
+                // 영상 정보가 있으면
+                if (this.VideoItem != null)
+                {
+                    this.VideoFileName = Path.Combine(Application.StartupPath, "video" + this.VideoItem.FileExtension);
+                    this.SaveFileName = Path.Combine(savePath, this.VideoItem.FullName.Replace(this.VideoItem.FileExtension, ".avi"));  // 파일 확장자를 ".avi"로 변경
+                }
+                if (this.AudioItem != null)
+                {
+                    this.AudioFileName = Path.Combine(Application.StartupPath, "audio.mp4");
+                    if (string.IsNullOrEmpty(this.SaveFileName))
+                    {
+                        this.SaveFileName = Path.Combine(savePath, this.AudioItem.FullName + ".avi");
+                    }
+                }
             }
             catch (Exception)
             {
             }
+
         }
+
 
         public void DownloadStart()
         {
-            thread = new Thread(DownloadWorker);
+            // 상태 초기화
+            this.VideoDownloadComplete = false;
+            this.AudioDownloadComplete = false;
+
+
+            if ((this.VideoItem == null) && (this.AudioItem == null))
+            {
+                if (StatusChangeEvent != null)
+                {
+                    StatusChangeEvent("URL로부터 영상/음성을 가져오는데 실패하였습니다.");
+                }
+
+                return;
+            }
+
+            // 영상 다운로드 시작
+            if (this.VideoItem == null)
+            {
+                this.VideoDownloadComplete = true;
+            }
+            else
+            {
+                VideoDownloadWorker();
+            }
+
+            // 음성 다운로드 시작
+            if (this.AudioItem == null)
+            {
+                this.AudioDownloadComplete = true;
+            }
+            else
+            {
+                AudioDownloadWorker();
+            }
+
+
+            if (StatusChangeEvent != null)
+            {
+                StatusChangeEvent("영상/음성 파일 다운로드를 시작합니다.");
+            }
+
+            Thread thread = new Thread(ConvertWorker);
             thread.IsBackground = true;
             thread.Start();
         }
 
 
-        public void DownloadWorker()
+        /// <summary>
+        /// 영상/음성 파일 다운로드가 완료될때까지 대기한 뒤 영상과 음성 파일을 합쳐 최종 파일을 생성한다.
+        /// </summary>
+        private void ConvertWorker()
         {
-            string videoFileName = Path.Combine(Application.StartupPath, "video.mp4");
-            string audioFileName = Path.Combine(Application.StartupPath, "audio.mp4");
-            string finalFileName = Path.Combine(Application.StartupPath, "final.avi");
-            string targetFileName = "";
-
-            YouTubeVideo video = GetBestVideo();
-            YouTubeVideo audio = GetBestAudio();
-
-            // 영상 다운로드 체크
-            this.FoundVideo = (video != null ? true : false);
-            this.VideoDownloadComplete = (video != null ? false : true);        // 영상이 없는 경우 다운로드 완료 처리
-
-            // 음성 다운로드 체크
-            this.FoundAudio = (audio != null ? true : false);
-            this.AudioDownloadComplete = (audio != null ? false : true);        // 음성이 없는 경우 다운로드 완료 처리
-
-
-            if (!this.FoundVideo && !this.FoundAudio)
-            {
-                logger.Error("영상/음성을 찾을 수 없습니다.");
-                return;
-            }
-
-            if (this.FoundVideo)
-            {
-                targetFileName = Path.Combine(Application.StartupPath, video.FullName.Replace(video.FileExtension, ".avi"));
-            }
-            else
-            {
-                targetFileName = Path.Combine(Application.StartupPath, audio.FullName.Replace(audio.FileExtension, ".avi"));
-            }
-
-
-            var videoprogress = new Progress<int>(percent =>
-            {
-                logger.Debug(string.Format("영상 다운로드 : {0}%", percent));
-                if (percent == 100)
-                    this.VideoDownloadComplete = true;
-
-                if (VideoProgressEvent != null)
-                    VideoProgressEvent(percent);
-            });
-
-            var audioprogress = new Progress<int>(percent =>
-            {
-                logger.Debug(string.Format("음성 다운로드 : {0}%", percent));
-                if (percent == 100)
-                    this.AudioDownloadComplete = true;
-
-                if (AudioProgressEvent != null)
-                    AudioProgressEvent(percent);
-            });
-
-
-            // 영상 다운로드 시작
-            if (this.FoundVideo)
-            {
-                logger.Debug("영상 다운로드 Start");
-                DownloadVideoAsync(video.Uri, videoFileName, videoprogress);
-            }
-                
-
-            // 음성 다운로드 시작
-            if (this.FoundAudio)
-            {
-                logger.Debug("음성 다운로드 Start");
-                DownloadVideoAsync(audio.Uri, audioFileName, audioprogress);
-            }
-                
-
-            // 영상/음성 다운로드 완료 확인
+            // 영상/음성파일이 다운로드 될때까지 대기
             while (true)
             {
                 if (this.VideoDownloadComplete && this.AudioDownloadComplete)
@@ -156,17 +162,30 @@ namespace Youtube_Downloader
                 Thread.Sleep(1);
             }
 
-            logger.Debug("영상/음성 다운로드 완료");
+            if (StatusChangeEvent != null)
+            {
+                StatusChangeEvent("영상과 음성파일을 하나의 파일로 합치는 중입니다.");
+            }
 
-            // Merge
-            logger.Debug("영상/음성 merge start");
             string command = "";
-            if (this.FoundVideo)
-                command += "-i \"" + videoFileName + "\" ";
-            if (this.FoundAudio)
-                command += "-i \"" + audioFileName + "\" ";
-            command += "-preset veryfast ";
-            command += "\"" + finalFileName + "\"";
+            
+            // ffmpeg 입력 파일 설정
+            if (this.VideoItem != null)
+                command += "-i \"" + this.VideoFileName + "\" ";
+            if (this.AudioItem != null)
+                command += "-i \"" + this.AudioFileName + "\" ";
+
+            // ffmpeg 옵션 지정
+            //            command += "-preset veryfast ";     // preset - ultrafast, superfast, veryfast
+            //command += "-c:v libx264 ";         // 비디오 - H.264 코덱
+            //command += "-c:a mp3 ";             // 음성 - MP3 코덱
+
+            command += FFMpegOption + " ";
+
+
+            // ffmpeg 출력 파일 설정
+            command += "\"" + this.SaveFileName + "\"";
+
 
             using (Engine engine = new Engine(Path.Combine(Application.StartupPath, "ffmpeg.exe")))
             {
@@ -175,20 +194,19 @@ namespace Youtube_Downloader
                 engine.CustomCommand(command);
             }
 
-            logger.Debug("최종 파일 적용");
-            FileInfo sf = new FileInfo(finalFileName);
-            FileInfo tf = new FileInfo(targetFileName);
-            if (tf.Exists)
-                tf.Delete();
-            sf.MoveTo(targetFileName);
-            
-            File.Delete(videoFileName);
-            File.Delete(audioFileName);
+            if (StatusChangeEvent != null)
+            {
+                StatusChangeEvent("다운로드 완료");
+            }
 
-            logger.Debug("작업 완료");
+            if (DownloadComplete != null)
+            {
+                DownloadComplete();
+            }
 
-            thread = null;
         }
+
+
         private void OnCombineProgress(object sender, ConvertProgressEventArgs e)
         {
             logger.Debug("영상/음성 합치기 : " + e.ProcessedDuration + " / " + e.TotalDuration);
@@ -200,6 +218,85 @@ namespace Youtube_Downloader
         }
 
 
+        /// <summary>
+        /// 영상 파일 다운로드
+        /// </summary>
+        private void VideoDownloadWorker()
+        {
+            var progress = new Progress<int>(percent =>
+            {
+                logger.Debug(string.Format("영상 다운로드 : {0}%", percent));
+                if (VideoProgressEvent != null)
+                    VideoProgressEvent(percent);
+
+                if (percent == 100)
+                {
+                    this.VideoDownloadComplete = true;
+                    if (StatusChangeEvent != null)
+                    {
+                        StatusChangeEvent("영상 파일 다운로드를 완료했습니다.");
+                    }
+                }
+                    
+            });
+
+            // 영상 다운로드 시작
+            logger.Debug("영상 다운로드 Start");
+            DownloadVideoAsync(this.VideoItem.Uri, this.VideoFileName, progress);
+        }
+
+        /// <summary>
+        /// 음성 파일 다운로드
+        /// </summary>
+        private void AudioDownloadWorker()
+        {
+            var progress = new Progress<int>(percent =>
+            {
+                logger.Debug(string.Format("음성 다운로드 : {0}%", percent));
+                if (AudioProgressEvent != null)
+                    AudioProgressEvent(percent);
+
+                if (percent == 100)
+                {
+                    this.AudioDownloadComplete = true;
+                    if (StatusChangeEvent != null)
+                    {
+                        StatusChangeEvent("음성 파일 다운로드를 완료했습니다.");
+                    }
+                }
+                
+            });
+
+            // 영상 다운로드 시작
+            logger.Debug("음성 다운로드 Start");
+            DownloadVideoAsync(this.AudioItem.Uri, this.AudioFileName, progress);
+        }
+
+
+        private void GetVideoInformation(YouTubeVideo video)
+        {
+            logger.Debug("    AdaptiveKind = " + video.AdaptiveKind);
+            logger.Debug("    AudioBitrate = " + video.AudioBitrate);
+            logger.Debug("    AudioFormat = " + video.AudioFormat);
+            logger.Debug("    ContentLength = " + video.ContentLength);
+            logger.Debug("    FileExtension = " + video.FileExtension);
+            logger.Debug("    Format = " + video.Format);
+            logger.Debug("    FormatCode = " + video.FormatCode);
+            logger.Debug("    Fps = " + video.Fps);
+            logger.Debug("    FullName = " + video.FullName);
+            logger.Debug("    IsAdaptive = " + video.IsAdaptive);
+            logger.Debug("    IsEncrypted = " + video.IsEncrypted);
+            logger.Debug("    Resolution = " + video.Resolution);
+            logger.Debug("    Title = " + video.Title);
+            logger.Debug("    Uri = " + video.Uri);
+            logger.Debug("    WebSite = " + video.WebSite);
+        }
+
+
+        /// <summary>
+        /// 전체 영상에서 해상도가 가장 높은 영상을 가져온다.
+        /// </summary>
+        /// <returns></returns>
         public YouTubeVideo GetBestVideo()
         {
             if (this.AllVideos == null)
@@ -220,6 +317,10 @@ namespace Youtube_Downloader
             return highVideo;
         }
 
+        /// <summary>
+        /// 전체 음성에서 음질이 가장 좋은 영상을 가져온다.
+        /// </summary>
+        /// <returns></returns>
         public YouTubeVideo GetBestAudio()
         {
             if (this.AllVideos == null)
@@ -241,6 +342,14 @@ namespace Youtube_Downloader
         }
 
 
+
+        /// <summary>
+        /// 비동기 방식으로 지정한 영상을 다운로드 한다.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="outputPath"></param>
+        /// <param name="progress"></param>
+        /// <returns></returns>
         public async Task DownloadVideoAsync(string url, string outputPath, IProgress<int> progress)
         {
             using (var client = new HttpClient())
@@ -270,17 +379,18 @@ namespace Youtube_Downloader
                         totalRead += read;
                         if (canReportProgress)
                         {
-                            progress.Report((int) (totalRead * 100 / totalBytes));
+                            progress.Report((int)(totalRead * 100 / totalBytes));
                         }
                     }
                     if (totalRead != totalBytes)
                     {
-                        logger.Error("다운로드 실패");
+                        if (StatusChangeEvent != null)
+                        {
+                            StatusChangeEvent("다운로드중 오류가 발생하였습니다.");
+                        }
                     }
                 }
             }
         }
-
-
     }
 }
