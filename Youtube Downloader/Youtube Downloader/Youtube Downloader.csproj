@@ -198,7 +198,6 @@
   <ItemGroup>
     <Compile Include="CustomYouTubeClient.cs" />
     <Compile Include="Downloader.cs" />
-    <Compile Include="Downloader1.cs" />
     <Compile Include="Frm_Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -209,7 +208,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TextConfig.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="YoutubeClient.cs" />
     <EmbeddedResource Include="Frm_Main.resx">
       <DependentUpon>Frm_Main.cs</DependentUpon>
     </EmbeddedResource>

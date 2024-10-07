@@ -31,24 +31,15 @@ namespace Youtube_Downloader
         {
             this.label1 = new System.Windows.Forms.Label();
             this.txt_URL = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button5 = new System.Windows.Forms.Button();
-            this.button6 = new System.Windows.Forms.Button();
-            this.button7 = new System.Windows.Forms.Button();
-            this.button8 = new System.Windows.Forms.Button();
             this.pgb_Video = new System.Windows.Forms.ProgressBar();
             this.pgb_Audio = new System.Windows.Forms.ProgressBar();
             this.lbl_VideoProgress = new System.Windows.Forms.Label();
             this.lbl_AudioProgress = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.txt_SavePath = new System.Windows.Forms.TextBox();
-            this.cmd_SelectSavePath = new System.Windows.Forms.Button();
+            this.btn_SelectSavePath = new System.Windows.Forms.Button();
             this.btn_DownloadStart = new System.Windows.Forms.Button();
             this.lbl_ProgressStatus = new System.Windows.Forms.Label();
-            this.button9 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -66,86 +57,6 @@ namespace Youtube_Downloader
             this.txt_URL.Name = "txt_URL";
             this.txt_URL.Size = new System.Drawing.Size(357, 21);
             this.txt_URL.TabIndex = 1;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(14, 320);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(199, 47);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Get Video Info";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(14, 373);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(199, 47);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "Select Folder";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(219, 320);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(199, 47);
-            this.button3.TabIndex = 4;
-            this.button3.Text = "Download Video";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
-            // 
-            // button4
-            // 
-            this.button4.Location = new System.Drawing.Point(424, 320);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(199, 47);
-            this.button4.TabIndex = 5;
-            this.button4.Text = "Download Audio";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
-            // 
-            // button5
-            // 
-            this.button5.Location = new System.Drawing.Point(424, 373);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(199, 47);
-            this.button5.TabIndex = 6;
-            this.button5.Text = "Combine";
-            this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
-            // 
-            // button6
-            // 
-            this.button6.Location = new System.Drawing.Point(629, 373);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(199, 47);
-            this.button6.TabIndex = 7;
-            this.button6.Text = "Combine (avi)";
-            this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.button6_Click);
-            // 
-            // button7
-            // 
-            this.button7.Location = new System.Drawing.Point(219, 373);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(199, 47);
-            this.button7.TabIndex = 8;
-            this.button7.Text = "Download Video Custom";
-            this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.button7_Click);
-            // 
-            // button8
-            // 
-            this.button8.Location = new System.Drawing.Point(629, 243);
-            this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(199, 47);
-            this.button8.TabIndex = 9;
-            this.button8.Text = "영상/음성 다운로드(Thread)";
-            this.button8.UseVisualStyleBackColor = true;
-            this.button8.Click += new System.EventHandler(this.button8_Click);
             // 
             // pgb_Video
             // 
@@ -195,15 +106,15 @@ namespace Youtube_Downloader
             this.txt_SavePath.Size = new System.Drawing.Size(357, 21);
             this.txt_SavePath.TabIndex = 15;
             // 
-            // cmd_SelectSavePath
+            // btn_SelectSavePath
             // 
-            this.cmd_SelectSavePath.Location = new System.Drawing.Point(377, 160);
-            this.cmd_SelectSavePath.Name = "cmd_SelectSavePath";
-            this.cmd_SelectSavePath.Size = new System.Drawing.Size(32, 30);
-            this.cmd_SelectSavePath.TabIndex = 16;
-            this.cmd_SelectSavePath.Text = "...";
-            this.cmd_SelectSavePath.UseVisualStyleBackColor = true;
-            this.cmd_SelectSavePath.Click += new System.EventHandler(this.cmd_SelectSavePath_Click);
+            this.btn_SelectSavePath.Location = new System.Drawing.Point(377, 160);
+            this.btn_SelectSavePath.Name = "btn_SelectSavePath";
+            this.btn_SelectSavePath.Size = new System.Drawing.Size(32, 30);
+            this.btn_SelectSavePath.TabIndex = 16;
+            this.btn_SelectSavePath.Text = "...";
+            this.btn_SelectSavePath.UseVisualStyleBackColor = true;
+            this.btn_SelectSavePath.Click += new System.EventHandler(this.btn_SelectSavePath_Click);
             // 
             // btn_DownloadStart
             // 
@@ -224,39 +135,20 @@ namespace Youtube_Downloader
             this.lbl_ProgressStatus.TabIndex = 18;
             this.lbl_ProgressStatus.Text = "진행상황:";
             // 
-            // button9
-            // 
-            this.button9.Location = new System.Drawing.Point(424, 113);
-            this.button9.Name = "button9";
-            this.button9.Size = new System.Drawing.Size(182, 50);
-            this.button9.TabIndex = 19;
-            this.button9.Text = "ffmpeg 시간 테스트";
-            this.button9.UseVisualStyleBackColor = true;
-            this.button9.Click += new System.EventHandler(this.button9_Click);
-            // 
             // Frm_Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(840, 450);
-            this.Controls.Add(this.button9);
             this.Controls.Add(this.lbl_ProgressStatus);
             this.Controls.Add(this.btn_DownloadStart);
-            this.Controls.Add(this.cmd_SelectSavePath);
+            this.Controls.Add(this.btn_SelectSavePath);
             this.Controls.Add(this.txt_SavePath);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.lbl_AudioProgress);
             this.Controls.Add(this.lbl_VideoProgress);
             this.Controls.Add(this.pgb_Audio);
             this.Controls.Add(this.pgb_Video);
-            this.Controls.Add(this.button8);
-            this.Controls.Add(this.button7);
-            this.Controls.Add(this.button6);
-            this.Controls.Add(this.button5);
-            this.Controls.Add(this.button4);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.txt_URL);
             this.Controls.Add(this.label1);
             this.Name = "Frm_Main";
@@ -272,24 +164,15 @@ namespace Youtube_Downloader
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txt_URL;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button5;
-        private System.Windows.Forms.Button button6;
-        private System.Windows.Forms.Button button7;
-        private System.Windows.Forms.Button button8;
         private System.Windows.Forms.ProgressBar pgb_Video;
         private System.Windows.Forms.ProgressBar pgb_Audio;
         private System.Windows.Forms.Label lbl_VideoProgress;
         private System.Windows.Forms.Label lbl_AudioProgress;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txt_SavePath;
-        private System.Windows.Forms.Button cmd_SelectSavePath;
+        private System.Windows.Forms.Button btn_SelectSavePath;
         private System.Windows.Forms.Button btn_DownloadStart;
         private System.Windows.Forms.Label lbl_ProgressStatus;
-        private System.Windows.Forms.Button button9;
     }
 }
 

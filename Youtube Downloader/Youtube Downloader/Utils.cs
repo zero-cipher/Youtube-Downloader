@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,15 @@ namespace Youtube_Downloader
             }
 
             return defaultValue;
+        }
+
+        internal static long GetFileSize(string saveFileName)
+        {
+            FileInfo fi = new FileInfo(saveFileName);
+            if (fi.Exists)
+                return fi.Length;
+
+            return 0;
         }
     }
 }
