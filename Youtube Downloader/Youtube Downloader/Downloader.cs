@@ -392,6 +392,10 @@ namespace Youtube_Downloader
             logger.Debug("동영상 파일 크기 : " + Utils.GetFileSize(this.SaveFileName).ToString("#,##0") + " bytes");
             logger.Debug("동영상 합치기 소요 시간 : " + convertTimer.Elapsed.ToString());
 
+            // 완료되면 임시파일 삭제
+            Utils.DeleteFile(this.VideoFileName);
+            Utils.DeleteFile(this.AudioFileName);
+
             // 다운로드 완료 메세지 출력
             if (StatusChangeEvent != null)
             {

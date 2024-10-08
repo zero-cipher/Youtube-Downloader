@@ -37,5 +37,14 @@ namespace Youtube_Downloader
 
             return 0;
         }
+
+        internal static void DeleteFile(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName))
+                return;
+            FileInfo fi = new FileInfo(fileName);
+            if (fi.Exists)
+                fi.Delete();
+        }
     }
 }
