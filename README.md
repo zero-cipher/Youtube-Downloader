@@ -2,18 +2,18 @@
 # 유투브 영상 다운로드
 
 ## 개발 툴
-Tool : Microsoft Visual Studio 2019 Community Edition
-Language : C#
-.NET Framework : .NET Framework 4.7.2
+Tool : Microsoft Visual Studio 2019 Community Edition</br>
+Language : C#</br>
+.NET Framework : .NET Framework 4.7.2</br>
 
 ## 사용 라이브러리
-log4net 3.0.1 - The Apache Software Foundation
+log4net 3.0.1 - The Apache Software Foundation</br>
 https://logging.apache.org/log4net/
 
-MediaToolkit 1.1.0.1 - Aydin
+MediaToolkit 1.1.0.1 - Aydin</br>
 https://github.com/AydinAdn/MediaToolkit
 
-VideoLibrary 3.2.6 - Bar Arnon, OMANSAK
+VideoLibrary 3.2.6 - Bar Arnon, OMANSAK</br>
 https://github.com/omansak/libvideo
 
 WindowsAPICodePackShell 8.0.5 - Microsoft Corporation
