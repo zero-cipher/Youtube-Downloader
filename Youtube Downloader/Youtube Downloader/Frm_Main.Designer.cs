@@ -103,12 +103,12 @@ namespace Youtube_Downloader
             // 
             this.txt_SavePath.Location = new System.Drawing.Point(14, 166);
             this.txt_SavePath.Name = "txt_SavePath";
-            this.txt_SavePath.Size = new System.Drawing.Size(357, 21);
+            this.txt_SavePath.Size = new System.Drawing.Size(554, 21);
             this.txt_SavePath.TabIndex = 15;
             // 
             // btn_SelectSavePath
             // 
-            this.btn_SelectSavePath.Location = new System.Drawing.Point(377, 160);
+            this.btn_SelectSavePath.Location = new System.Drawing.Point(574, 160);
             this.btn_SelectSavePath.Name = "btn_SelectSavePath";
             this.btn_SelectSavePath.Size = new System.Drawing.Size(32, 30);
             this.btn_SelectSavePath.TabIndex = 16;
@@ -139,7 +139,7 @@ namespace Youtube_Downloader
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(840, 450);
+            this.ClientSize = new System.Drawing.Size(618, 202);
             this.Controls.Add(this.lbl_ProgressStatus);
             this.Controls.Add(this.btn_DownloadStart);
             this.Controls.Add(this.btn_SelectSavePath);
@@ -151,6 +151,8 @@ namespace Youtube_Downloader
             this.Controls.Add(this.pgb_Video);
             this.Controls.Add(this.txt_URL);
             this.Controls.Add(this.label1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "Frm_Main";
             this.Text = "YouTube 영상 다운로드";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Frm_Main_FormClosing);

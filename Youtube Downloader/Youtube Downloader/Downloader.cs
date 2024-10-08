@@ -45,9 +45,6 @@ namespace Youtube_Downloader
         private int VideoDownloadPercent;
         private int AudioDownloadPercent;
 
-
-        public string FFMpegOption { get; set; } = "";
-
         // 다운로드할 영상/음성 파일명
         private string VideoFileName = "";
         private string AudioFileName = "";
@@ -58,6 +55,15 @@ namespace Youtube_Downloader
 
 
         private Stopwatch timer = new Stopwatch();
+
+
+
+
+        // 환경 옵션
+        public string FFMpegOption { get; set; } = "";
+        public int VideoQuality { get; set; }
+
+
 
         /// <summary>
         /// 대상 url의 모든 영상을 가져온 다음 다운로드 할 Video영상과 Audio영상을 선택한다.
@@ -72,8 +78,14 @@ namespace Youtube_Downloader
 
                 this.AllVideos = youtube.GetAllVideos(url);
 
-
-                this.VideoItem = GetBestVideo();
+                if (this.VideoQuality == 1)
+                {
+                    this.VideoItem = GetBestVideo();
+                }
+                else
+                {
+                    this.VideoItem = Get720pVideo();
+                }
                 this.AudioItem = GetBestAudio();
 
 #if DEBUG
@@ -159,6 +171,37 @@ namespace Youtube_Downloader
             return highVideo;
         }
 
+        private YouTubeVideo Get720pVideo()
+        {
+            if (this.AllVideos == null)
+                return null;
+
+            int highResolution = 0;
+            YouTubeVideo highVideo = null;
+            foreach (YouTubeVideo video in this.AllVideos)
+            {
+                if (video.AdaptiveKind.ToString().Equals(AdaptiveKind.Video.ToString()))
+                {
+                    // 720p일경우 해당 영상 리턴
+                    if ((video.Resolution == 720) && (video.Format == VideoFormat.Mp4))
+                        return video;
+
+                    if (video.Resolution > highResolution)
+                    {
+                        highResolution = video.Resolution;
+                        highVideo = video;
+                    }
+                }
+            }
+
+            // 720p 영상이 없을 경우 가장 높은 해상도 영상 리턴
+            return highVideo;
+        }
+
+
+        
+
+
         /// <summary>
         /// 전체 음성에서 음질이 가장 좋은 영상을 가져온다.
         /// </summary>
@@ -201,6 +244,10 @@ namespace Youtube_Downloader
                 if (StatusChangeEvent != null)
                 {
                     StatusChangeEvent("URL로부터 영상/음성을 가져오는데 실패하였습니다.");
+                    if (DownloadComplete != null)
+                    {
+                        DownloadComplete();
+                    }
                 }
 
                 return;
@@ -306,7 +353,7 @@ namespace Youtube_Downloader
                 // FFMpeg ConvertProgressEvent
                 engine.ConvertProgressEvent += (s, e) =>
                 {
-                    logger.Debug("영상/음성 합치기 : " + e.ProcessedDuration + " / " + e.TotalDuration);
+                    //logger.Debug("영상/음성 합치기 : " + e.ProcessedDuration + " / " + e.TotalDuration);
                 };
 
                 // FFMpeg ConversionCompleteEvent
@@ -320,6 +367,8 @@ namespace Youtube_Downloader
             }
 
             logger.Debug("ffmpeg command : " + command);
+            logger.Debug("원본 영상 파일 크기 : " + Utils.GetFileSize(this.VideoFileName).ToString("#,##0") + " bytes");
+            logger.Debug("원본 음성 파일 크기 : " + Utils.GetFileSize(this.AudioFileName).ToString("#,##0") + " bytes");
             logger.Debug("동영상 파일 크기 : " + Utils.GetFileSize(this.SaveFileName).ToString("#,##0") + " bytes");
             logger.Debug("동영상 합치기 소요 시간 : " + convertTimer.Elapsed.ToString());
 
