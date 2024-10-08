@@ -196,7 +196,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomYouTubeClient.cs" />
     <Compile Include="Downloader.cs" />
     <Compile Include="Frm_Main.cs">
       <SubType>Form</SubType>
