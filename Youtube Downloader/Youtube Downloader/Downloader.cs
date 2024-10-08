@@ -62,7 +62,7 @@ namespace Youtube_Downloader
         // 환경 옵션
         public string FFMpegOption { get; set; } = "";
         public int VideoQuality { get; set; }
-
+        public string TargetFileExtension { get; set; } = "";
 
 
         /// <summary>
@@ -88,30 +88,50 @@ namespace Youtube_Downloader
                 }
                 this.AudioItem = GetBestAudio();
 
-#if DEBUG
+
                 logger.Debug("[영상 파일 정보]");
                 GetVideoInformation(this.VideoItem);
                 logger.Debug("[음성 파일 정보]");
                 GetVideoInformation(this.AudioItem);
-#endif
+
 
                 // 대상폴더가 없으면 생성
                 DirectoryInfo df = new DirectoryInfo(savePath);
                 if (!df.Exists)
                     df.Create();
 
+                string targetExtension = this.TargetFileExtension;
+                
                 // 영상 정보가 있으면
                 if (this.VideoItem != null)
                 {
+                    if (string.IsNullOrEmpty(targetExtension))
+                    {
+                        targetExtension = this.VideoItem.FileExtension;
+                    }
+                    if (!targetExtension.StartsWith("."))
+                    {
+                        targetExtension = "." + targetExtension;
+                    }
+
                     this.VideoFileName = Path.Combine(Application.StartupPath, "video" + this.VideoItem.FileExtension);
-                    this.SaveFileName = Path.Combine(savePath, this.VideoItem.FullName.Replace(this.VideoItem.FileExtension, ".avi"));  // 파일 확장자를 ".avi"로 변경
+                    this.SaveFileName = Path.Combine(savePath, this.VideoItem.FullName.Replace(this.VideoItem.FileExtension, targetExtension));  // 파일 확장자를 ".avi"로 변경
                 }
                 if (this.AudioItem != null)
                 {
+                    if (string.IsNullOrEmpty(targetExtension))
+                    {
+                        targetExtension = ".mp4";
+                    }
+                    if (!targetExtension.StartsWith("."))
+                    {
+                        targetExtension = "." + targetExtension;
+                    }
+
                     this.AudioFileName = Path.Combine(Application.StartupPath, "audio.mp4");
                     if (string.IsNullOrEmpty(this.SaveFileName))
                     {
-                        this.SaveFileName = Path.Combine(savePath, this.AudioItem.FullName + ".avi");
+                        this.SaveFileName = Path.Combine(savePath, this.AudioItem.FullName + targetExtension);
                     }
                 }
 
