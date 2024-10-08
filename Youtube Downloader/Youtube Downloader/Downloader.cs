@@ -78,7 +78,7 @@ namespace Youtube_Downloader
 
                 this.AllVideos = youtube.GetAllVideos(url);
 
-                if (this.VideoQuality == 1)
+                if (this.VideoQuality == 0)
                 {
                     this.VideoItem = GetBestVideo();
                 }
