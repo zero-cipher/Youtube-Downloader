@@ -21,7 +21,6 @@ namespace Youtube_Downloader
 
 
         private string ConfigFileName;
-        private int VideoQuality = 0;
 
         public Frm_Main()
         {
@@ -42,7 +41,7 @@ namespace Youtube_Downloader
 
             ConfigFileName = Path.Combine(Application.StartupPath, "config.ini");
             txt_SavePath.Text = TextConfig.GetString(this.ConfigFileName, "default", "SavePath", Application.StartupPath);
-            this.VideoQuality = TextConfig.GetInteger(this.ConfigFileName, "default", "VideoQuality", 1);
+            
 
         }
 
@@ -60,7 +59,9 @@ namespace Youtube_Downloader
             Downloader downloader = new Downloader(txt_URL.Text, txt_SavePath.Text);
 
             downloader.FFMpegOption = TextConfig.GetString(this.ConfigFileName, "default", "ffmpegoption", "");
-            downloader.VideoQuality = this.VideoQuality;
+            downloader.VideoQuality = TextConfig.GetInteger(this.ConfigFileName, "default", "VideoQuality", 0);
+            downloader.TargetFileExtension = TextConfig.GetString(this.ConfigFileName, "default", "TargetFileExtension", "");
+
 
             // 영상 파일 다운로드 진행 상황 Event 처리
             downloader.VideoProgressEvent += (percent) =>
